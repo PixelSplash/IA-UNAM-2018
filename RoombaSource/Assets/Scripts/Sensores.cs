@@ -30,6 +30,7 @@ public class Sensores : MonoBehaviour {
         }
         if(_tiempo_quieto > tiempo_estancado)
         {
+            _tiempo_quieto = 0;
             _comportamiento.MeEstanque();
         }
 	}
@@ -53,8 +54,8 @@ public class Sensores : MonoBehaviour {
 
         //Sensor de proximidad derecho
 
-        aux = transform.position + transform.right * rango_de_vision + transform.forward * 0.2f;
-        if (Physics.Raycast(transform.position + transform.up,transform.right, out hit, rango_de_vision))
+        aux = transform.position + transform.right * rango_de_vision;// * 3;
+        if (Physics.Raycast(transform.position + transform.up, transform.right, out hit, rango_de_vision))
         {
             
             if(hit.transform.tag == "Pared")
@@ -71,7 +72,7 @@ public class Sensores : MonoBehaviour {
 
         //Sensor de proximidad izquierdo
 
-        aux = transform.position - transform.right * rango_de_vision + transform.forward * 0.2f;
+        aux = transform.position - transform.right * rango_de_vision;// * 3;
         if (Physics.Raycast(transform.position + transform.up, -transform.right, out hit, rango_de_vision))
         {
             
@@ -89,8 +90,8 @@ public class Sensores : MonoBehaviour {
 
         //Sensor de proximidad frontal
 
-        aux = transform.position + transform.forward * rango_de_vision * 1.5f;
-        if (Physics.Raycast(transform.position + transform.up, transform.forward, out hit, rango_de_vision * 1.5f))
+        aux = transform.position + transform.forward * rango_de_vision;
+        if (Physics.Raycast(transform.position + transform.up, transform.forward, out hit, rango_de_vision))
         {
 
             if (hit.transform.tag == "Pared")
@@ -102,60 +103,24 @@ public class Sensores : MonoBehaviour {
         }
         else
         {
-            _comportamiento.ViEspacioVacio(aux);
+            //_comportamiento.ViEspacioVacio(aux);
         }
-        /*
-        //Sensor de proximidad diagonal derecho
-
-        aux = transform.position + Quaternion.AngleAxis(45, Vector3.up) * transform.forward * rango_de_vision * 1.5f;
-        if (Physics.Raycast(transform.position + transform.up, Quaternion.AngleAxis(45, Vector3.up) * transform.forward, out hit, rango_de_vision * 1.5f))
-        {
-
-            if (hit.transform.tag == "Pared")
-            {
-                //print(hit.point);
-                _comportamiento.ViPared(aux);
-            }
-
-        }
-        else
-        {
-            _comportamiento.ViEspacioVacio(aux);
-        }
-
-        //Sensor de proximidad diagonal izquierdo
-
-        aux = transform.position + Quaternion.AngleAxis(-45, Vector3.up) * transform.forward * rango_de_vision * 1.5f;
-        if (Physics.Raycast(transform.position + transform.up, Quaternion.AngleAxis(-45, Vector3.up) * transform.forward, out hit, rango_de_vision * 1.5f))
-        {
-
-            if (hit.transform.tag == "Pared")
-            {
-                //print(hit.point);
-                _comportamiento.ViPared(aux);
-            }
-
-        }
-        else
-        {
-            _comportamiento.ViEspacioVacio(aux);
-        }
-        */
+        
     }
 
     private void OnDrawGizmosSelected()
     {
         
         Vector3 aux;
+        aux = transform.position - transform.right * rango_de_vision * 3;
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, aux);
+
+        aux = transform.position + transform.right * rango_de_vision * 3;
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, aux);
+
         aux = transform.position + transform.forward * rango_de_vision;
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, aux);
-
-        aux = transform.position - transform.right * rango_de_vision;
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, aux);
-
-        aux = transform.position + transform.right * rango_de_vision;
         Gizmos.color = Color.red;
         Gizmos.DrawLine(transform.position, aux);
     }
