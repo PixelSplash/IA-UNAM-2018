@@ -428,7 +428,7 @@ MonoBehaviour:
   mapSize: 15
   pared: {fileID: 1503022545307762, guid: 25dc3a859cb17cb4d84319da0c178bd6, type: 2}
   basura: {fileID: 1166537188345114, guid: b499692e3db5b2347b4f05fa613d6ba4, type: 2}
-  numBasuras: 20
+  numBasuras: 100
 --- !u!4 &1044652337
 Transform:
   m_ObjectHideFlags: 0

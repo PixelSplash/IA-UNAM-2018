@@ -19,10 +19,6 @@ public class Sensores : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if(numBasuras <= 0)
-        {
-            //transform.position = new Vector3(1,transform.position.y,1);
-        }
 		if(pos == transform.position)
         {
             _tiempo_quieto++;
@@ -91,7 +87,6 @@ public class Sensores : MonoBehaviour {
             
             if (hit.transform.tag == "Pared")
             {
-                //print(hit.point);
                 _comportamiento.ViPared(aux);
             }
             
@@ -171,25 +166,7 @@ public class Sensores : MonoBehaviour {
         
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        
-        Vector3 aux;
-        aux = transform.position - transform.right * rango_de_vision * 3;
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, aux);
-
-        aux = transform.position + transform.right * rango_de_vision * 3;
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, aux);
-
-        aux = transform.position + transform.forward * rango_de_vision * 1.5f;
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, aux);
-    }
-
-  
-
+ 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Basura")
