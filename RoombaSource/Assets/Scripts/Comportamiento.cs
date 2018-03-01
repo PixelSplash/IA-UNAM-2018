@@ -31,6 +31,8 @@ public class Comportamiento : MonoBehaviour
     private int _xDestino;
     private int _zDestino;
     private int pathcount;
+    public float normalizacionDePosicion;
+    private int count;
 
     //Sensores _sensores;
 
@@ -54,10 +56,10 @@ public class Comportamiento : MonoBehaviour
            // pathFindingMap[i] = new int[mapSize];
             for (int j = 0; j < mapSize; j++)
             {
-                map[i][j] = - 1;
+               // if((i != 0 && i != mapSize - 1) || (j != 0 && j != mapSize - 1)) map[i][j] = - 1;
                 //pathFindingMap[i][j] = -1;
-
-
+               // else map[i][j] = -2;
+                map[i][j] = -1;
             }
         }
         map[1][0] = -2;
@@ -72,144 +74,14 @@ public class Comportamiento : MonoBehaviour
 
     internal void MeEstanque()
     {
+        count = 0;
         pathcount += 1;
         int x = Mathf.RoundToInt(transform.position.x);
         int z = Mathf.RoundToInt(transform.position.z);
-        map[x][z] = pathcount;
-        //print("me Estanque");
-        //print(x);
-        //print(z);
-        /*
-        int range = 50;
-        bool encontrado = false;
-        for(int i = 1; i < range; i++)
-        {
-            if (encontrado) break;
-
-            for (int j = -i; j <= i; i++)
-            {
-                if (encontrado) break;
-
-
-
-                if (x+i < mapSize && z + j > -1 && z + j < mapSize)
-                {
-                    if(map[x + i][z + j] == 0)
-                    {
-                        x = x + i;
-                        z = z + j;
-                        encontrado = true;
-                    }
-                    
-                }
-                if (x - i > -1 && z + j > -1 && z + j < mapSize)
-                {
-                    if (map[x - i][z + j] == 0) {
-                        x = x - i;
-                        z = z + j;
-                        encontrado = true;
-                    }
-                }
-                if (z + i < mapSize && x + j > -1 && x + j < mapSize && map[x + j][z + i] == 0)
-                {
-                    if (map[x - i][z + j] == 0)
-                    {
-                        x = x + j;
-                        z = z + i;
-                        encontrado = true;
-                    }
-                }
-                if (z - i > -1 && x + j > -1 && x + j < mapSize && map[x + j][z - i] == 0)
-                {
-                    if (map[x - i][z + j] == 0)
-                    {
-                        x = x + j;
-                        z = z - i;
-                        encontrado = true;
-                    }
-                }
-            }
-        }
-        if (encontrado)
-        {
-            print("Encontre camino");
-            print(x);
-            print(z);
-
-            _xDestino = x;
-            _zDestino = z;
-            Pathfinding();
-        }
-        else print("Estancado");*/
-        //Pathfinding();
         searching = false;
     }
 
-    //Path Finding
-    /*
-    public void Pathfinding()
-    {
-        int x, z;
-        x = Mathf.RoundToInt(transform.position.x);
-        z = Mathf.RoundToInt(transform.position.z);
 
-        //int[] aux = { x, z };
-        //camino.Push(aux);
-        int cam = AuxPathfinding(x,z);
-        print("El camino mas corto mide");
-        print(cam);
-        
-    }
-
-    private int AuxPathfinding(int x,int z)
-    {
-        
-        
-        if (x < 0 || x > mapSize || z < 0 || z > mapSize || (map[x][z] != 1 && map[x][z] != 0) || pathFindingMap[x][z] == 1) return 1000;
-        pathFindingMap[x][z] = 1;
-        //print("pase por");
-        //print(x);
-        //print(z);
-        if (map[x][z] == 0) return 1;
-        int ret = 10000000;
-        int[] min = new int[2];
-       // min[0] = -1;
-       // min[1] = -1;
-
-        int aux = 1 + AuxPathfinding(x + 1, z);
-        if (aux < ret)
-        {
-            ret = aux;
-            min[0] = x + 1;
-            min[1] = z;
-        }
-        aux = 1 + AuxPathfinding(x - 1, z);
-        if (aux < ret)
-        {
-            ret = aux;
-            min[0] = x - 1;
-            min[1] = z;
-        }
-        aux = 1 + AuxPathfinding(x , z+1);
-        if (aux < ret)
-        {
-            ret = aux;
-            min[0] = x;
-            min[1] = z + 1;
-        }
-        aux = 1 + AuxPathfinding(x , z-1);
-        if (aux < ret)
-        {
-            ret = aux;
-            min[0] = x;
-            min[1] = z - 1;
-        }
-
-        //camino.Push(min);
-        return ret;
-        
-    }
-    */
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -219,8 +91,8 @@ public class Comportamiento : MonoBehaviour
         {
         
            
-            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x)*0.6f);// + mapSize / 2;
-            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z)*0.6f);// + mapSize / 2;
+            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x)* normalizacionDePosicion);// + mapSize / 2;
+            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z)* normalizacionDePosicion);// + mapSize / 2;
 
 
             if (nx != auxnx || nz != auxnz)
@@ -268,13 +140,13 @@ public class Comportamiento : MonoBehaviour
         else
         {
 
-            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * 0.6f);// + mapSize / 2;
-            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * 0.6f);// + mapSize / 2;
+            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);// + mapSize / 2;
+            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);// + mapSize / 2;
 
-            int rauxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * 0.6f);// + mapSize / 2;
-            int rauxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.right.z) * 0.6f);// + mapSize / 2;
-            int lauxnx = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * 0.6f);// + mapSize / 2;
-            int lauxnz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * 0.6f);// + mapSize / 2;
+            int rauxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);// + mapSize / 2;
+            int rauxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);// + mapSize / 2;
+            int lauxnx = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);// + mapSize / 2;
+            int lauxnz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);// + mapSize / 2;
 
             if (nx != auxnx || nz != auxnz)
             {
@@ -282,21 +154,26 @@ public class Comportamiento : MonoBehaviour
                 nz = auxnz;
             }
 
-            if (map[nx][nz] < pathcount && map[nx][nz] != -2 && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 2 || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 97))
+            if (map[nx][nz] < pathcount && map[nx][nz] != -2 && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5.0f || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
             {
-
+                //if (count > 1) {
+                _sensores.VerLados();
+                //}
                 //int ax, az;
-                int auxax = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.forward.x) * 0.3f);
-                int auxaz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.forward.z) * 0.3f);
+                int auxax = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.forward.x) * 0.4f);
+                int auxaz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.forward.z) * 0.4f);
 
                 if (ax != auxax || az != auxaz)
                 {
-
-                    map[ax][az] += pathcount;
+                    //count++;
+                    //map[ax][az] = pathcount;
+                    print("marque lugar");
+                    map[ax][az] = pathcount;
                     ax = auxax;
                     az = auxaz;
 
                     if(map[rauxnx][rauxnz] == 0 || map[lauxnx][lauxnz] == 0 || map[auxnx][auxnz] == 0)
+                    //if (map[rauxnx][rauxnz] == -1 || map[lauxnx][lauxnz] == -1 || map[auxnx][auxnz] == -1)
                     {
                         transform.position = new Vector3(ax, transform.position.y, az);
                         searching = true;
@@ -332,23 +209,17 @@ public class Comportamiento : MonoBehaviour
         //ultimoEspacioVacio[0] = x;
         //ultimoEspacioVacio[1] = z;
         
-        Instantiate(markfree, new Vector3(x, 3, z), Quaternion.identity);
-        if (map[x][z] == -1)
+        if(x >= 0 && x < mapSize && z >= 0 && z < mapSize)
         {
-            //print("Espacio");
-            //print(x);
-            //print(z);
-            //int[] espacio = new int[2];
-            //espacio[0] = x;
-            //espacio[1] = z;
-            //print("Ultimo espacio que vi");
-            //print(x);
-            //print(z);
-            //espacios.Push(espacio);
+            //Instantiate(markvisited, new Vector3(x, 3, z), Quaternion.identity);
+            //Instantiate(markfree, new Vector3(x, 3, z), Quaternion.identity);
+            if (map[x][z] == -1)
+            {
 
-            camino.Clear();
-            map[x][z] = 0;
+                map[x][z] = 0;
+            }
         }
+        
 
     }
 
@@ -359,13 +230,14 @@ public class Comportamiento : MonoBehaviour
         int x, z;
         x = Mathf.RoundToInt(aux.x);
         z = Mathf.RoundToInt(aux.z);
-        Instantiate(markwall, new Vector3(x, 5, z), Quaternion.identity);
-        if (map[x][z] == -1)
+        if (x >= 0 && x < mapSize && z >= 0 && z < mapSize)
         {
-            //print("Pared");
-            //print(x);
-            //print(z);
-            map[x][z] = -2;
+            Instantiate(markwall, new Vector3(x, 5, z), Quaternion.identity);
+            if (map[x][z] == -1)
+            {
+                
+                map[x][z] = -2;
+            }
         }
     }
 }
