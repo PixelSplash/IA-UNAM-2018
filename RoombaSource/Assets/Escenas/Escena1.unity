@@ -584,10 +584,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4530c16f143b93b409c6ae94d581e7ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapSize: 15
+  tamanoMapa: 15
   pared: {fileID: 1503022545307762, guid: 25dc3a859cb17cb4d84319da0c178bd6, type: 2}
   basura: {fileID: 1166537188345114, guid: b499692e3db5b2347b4f05fa613d6ba4, type: 2}
-  numBasuras: 100
 --- !u!4 &1044652337
 Transform:
   m_ObjectHideFlags: 0
@@ -929,6 +928,21 @@ Prefab:
       propertyPath: bateryImage
       value: 
       objectReference: {fileID: 803674715}
+    - target: {fileID: 114364648855397874, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: _tiempoEstancado
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 114364648855397874, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: rangoDeVision
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114364648855397874, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: tiempoEstancado
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 855cfdbac4658cf4793fbd29b203cc2b, type: 2}
   m_IsPrefabParent: 0

@@ -3,36 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Sensores : MonoBehaviour {
-    public int numBasuras;
     Comportamiento _comportamiento;
-    float _tiempo_quieto;
-    Vector3 pos;
-    public float tiempo_estancado;
-    public float rango_de_vision;
+    private float _tiempoQuieto; // Se utiliza como contador para saber si el agente esta estancado en un mismo sitio
+    Vector3 _pos; // Se utiliza para comparar la posicion en cada instante
+    public float tiempoEstancado; // Tiempo en el que se considera que se esta estancado
+    public float rangoDeVision; // Es la longitud del rayo de los sensores
 
     // Use this for initialization
     void Start () {
-        pos = transform.position;
-        _tiempo_quieto = 0;
+        _pos = transform.position;
+        _tiempoQuieto = 0;
         _comportamiento = GetComponent<Comportamiento>();
     }
 	
 	// Update is called once per frame
 	void Update () {
-		if(pos == transform.position)
+		if(_pos == transform.position)
         {
-            _tiempo_quieto++;
+            _tiempoQuieto++; // Esta en el mismo lugar que el frame anterior
         }
         else
         {
-            
-           _tiempo_quieto = 0;
-           pos = transform.position;
+           _tiempoQuieto = 0; // Cambio de lugar
+           _pos = transform.position;
         }
-        if(_tiempo_quieto > tiempo_estancado)
+
+        if(_tiempoQuieto > tiempoEstancado)
         {
-            _tiempo_quieto = 0;
-            _comportamiento.MeEstanque();
+            _tiempoQuieto = 0;
+            _comportamiento.MeEstanque(); // Percibe que se atasco, manda mensaje al modulo de comportamiento
         }
 	}
  
@@ -41,15 +40,13 @@ public class Sensores : MonoBehaviour {
         RaycastHit hit;
         Vector3 aux;
 
-        //Sensor de proximidad derecho atras
-
-        aux = transform.position - transform.forward + transform.right * rango_de_vision;// * 3;
-        if (Physics.Raycast(transform.position + transform.up - transform.forward, transform.right, out hit, rango_de_vision))
+        // Sensor de proximidad derecho trasero
+        aux = transform.position - transform.forward + transform.right * rangoDeVision;
+        if (Physics.Raycast(transform.position + transform.up - transform.forward, transform.right, out hit, rangoDeVision))
         {
             
             if(hit.transform.tag == "Pared")
             {
-                //print(hit.point);
                 _comportamiento.ViPared(aux);
             }
             
@@ -58,15 +55,13 @@ public class Sensores : MonoBehaviour {
         {
             _comportamiento.ViEspacioVacio(aux);
 
-            //Sensor de proximidad derecho atras 2
-
-            aux = transform.position - transform.forward + transform.right * rango_de_vision * 2;// * 3;
-            if (Physics.Raycast(transform.position + transform.up - transform.forward, transform.right, out hit, rango_de_vision * 2))
+            // Sensor de proximidad derecho trasero 2, solo se activa si no hay pared
+            aux = transform.position - transform.forward + transform.right * rangoDeVision * 2;
+            if (Physics.Raycast(transform.position + transform.up - transform.forward, transform.right, out hit, rangoDeVision * 2))
             {
 
                 if (hit.transform.tag == "Pared")
                 {
-                    //print(hit.point);
                     _comportamiento.ViPared(aux);
                 }
 
@@ -79,10 +74,10 @@ public class Sensores : MonoBehaviour {
             }
         }
 
-        //Sensor de proximidad izquierdo atras
+        // Sensor de proximidad izquierdo trasero
 
-        aux = transform.position - transform.forward - transform.right * rango_de_vision;// * 3;
-        if (Physics.Raycast(transform.position + transform.up - transform.forward, -transform.right, out hit, rango_de_vision))
+        aux = transform.position - transform.forward - transform.right * rangoDeVision;
+        if (Physics.Raycast(transform.position + transform.up - transform.forward, -transform.right, out hit, rangoDeVision))
         {
             
             if (hit.transform.tag == "Pared")
@@ -95,15 +90,14 @@ public class Sensores : MonoBehaviour {
         {
             _comportamiento.ViEspacioVacio(aux);
 
-            //Sensor de proximidad izquierdo atras 2
+            // Sensor de proximidad izquierdo trasero 2, , solo se activa si no hay pared
 
-            aux = transform.position - transform.forward - transform.right * rango_de_vision * 2;// * 3;
-            if (Physics.Raycast(transform.position + transform.up - transform.forward, -transform.right, out hit, rango_de_vision * 2))
+            aux = transform.position - transform.forward - transform.right * rangoDeVision * 2;
+            if (Physics.Raycast(transform.position + transform.up - transform.forward, -transform.right, out hit, rangoDeVision * 2))
             {
 
                 if (hit.transform.tag == "Pared")
                 {
-                    //print(hit.point);
                     _comportamiento.ViPared(aux);
                 }
 
@@ -114,65 +108,53 @@ public class Sensores : MonoBehaviour {
             }
         }
 
-        
+        // Sensor de proximidad derecho delantero
 
-        
-
-        //Sensor de proximidad derecho
-
-        aux = transform.position + transform.right * rango_de_vision;// * 3;
-        if (Physics.Raycast(transform.position + transform.up, transform.right, out hit, rango_de_vision))
+        aux = transform.position + transform.right * rangoDeVision;
+        if (Physics.Raycast(transform.position + transform.up, transform.right, out hit, rangoDeVision))
         {
 
             if (hit.transform.tag == "Pared")
             {
-                //print(hit.point);
                 _comportamiento.ViPared(aux);
             }
 
         }
 
-        //Sensor de proximidad izquierdo
+        // Sensor de proximidad izquierdo delantero
 
-        aux = transform.position - transform.right * rango_de_vision;// * 3;
-        if (Physics.Raycast(transform.position + transform.up, -transform.right, out hit, rango_de_vision))
+        aux = transform.position - transform.right * rangoDeVision;
+        if (Physics.Raycast(transform.position + transform.up, -transform.right, out hit, rangoDeVision))
         {
 
             if (hit.transform.tag == "Pared")
             {
-                //print(hit.point);
                 _comportamiento.ViPared(aux);
             }
 
         }
 
-        //Sensor de proximidad frontal
+        // Sensor de proximidad frontal
 
-        aux = transform.position + transform.forward * rango_de_vision * 1.5f;
-        if (Physics.Raycast(transform.position + transform.up, transform.forward, out hit, rango_de_vision *1.5f))
+        aux = transform.position + transform.forward * rangoDeVision * 1.5f;
+        if (Physics.Raycast(transform.position + transform.up, transform.forward, out hit, rangoDeVision *1.5f))
         {
 
             if (hit.transform.tag == "Pared")
             {
-                //print(hit.point);
                 _comportamiento.ViPared(aux);
             }
 
-        }
-        else
-        {
-            //_comportamiento.ViEspacioVacio(aux);
         }
         
     }
 
- 
+    // Limpia la basura que encuentra
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Basura")
         {
             Destroy(other.gameObject);
-            numBasuras--;
         }
     }
 }
