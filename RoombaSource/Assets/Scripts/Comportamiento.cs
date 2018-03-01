@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Comportamiento : MonoBehaviour
 {
@@ -28,11 +29,17 @@ public class Comportamiento : MonoBehaviour
     private int pathcount;
     public float normalizacionDePosicion;
     private bool bateriaBaja;
+    private int xObjetivo;
+    private int zObjetivo;
+    private bool loEncontre;
 
 
     // Use this for initialization
     void Start()
     {
+
+        Screen.SetResolution(500, 500, true);
+
         bateriaBaja = false;
         batery = 100;
         pathcount = 1;
@@ -66,13 +73,69 @@ public class Comportamiento : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            BuscarBase();
+            SceneManager.LoadScene("Escena1");
         }
-        print(state);
         batery -= bateryUseRatio;
         if (batery < 50) bateriaBaja = true;
         bateryImage.transform.localScale = new Vector3((batery/100.0f)*3, bateryImage.transform.localScale.y, bateryImage.transform.localScale.z);
 
+    }
+
+    internal void BuscarEspacioVacio()
+    {
+
+        xObjetivo = -1;
+        zObjetivo = -1;
+
+        loEncontre = false;
+        state = 3;
+        for (int i = 0; i < mapSize; i++)
+        {
+            for (int j = 0; j < mapSize; j++)
+            {
+                pathfinding[i][j] = 0;
+                visitados[i][j] = 0;
+            }
+        }
+
+        int actualx, actualz;
+        actualx = Mathf.RoundToInt(transform.position.x);
+        actualz = Mathf.RoundToInt(transform.position.z);
+        map[actualx][actualz] = pathcount;
+        bool res = PathFindingEspacios(actualx, actualz, mapSize*mapSize);
+
+    }
+
+    internal bool PathFindingEspacios(int x, int z, int count)
+    {
+        if (loEncontre) return false;
+        if (x < 0 || z < 0 || x >= mapSize || z >= mapSize) return false;
+
+        if (map[x][z] == 0)
+        {
+            loEncontre = true;
+            pathfinding[x][z] = count;
+            xObjetivo = x;
+            zObjetivo = z;
+            return true;
+        }
+
+        if (visitados[x][z] == 1 || map[x][z] < 0) return false;
+
+        visitados[x][z] = 1;
+        bool res = false;
+        if (PathFindingEspacios(x + 1, z, count - 1)) res = true;
+        if (PathFindingEspacios(x - 1, z, count - 1)) res = true;
+        if (PathFindingEspacios(x, z + 1, count - 1)) res = true;
+        if (PathFindingEspacios(x, z - 1, count - 1)) res = true;
+        if (res)
+        {
+            //print("Encontre Camino");
+            //print(x);
+            //print(z);
+            pathfinding[x][z] = count;
+        }
+        return res;
     }
 
     internal void BuscarBase()
@@ -91,6 +154,9 @@ public class Comportamiento : MonoBehaviour
         actualx = Mathf.RoundToInt(transform.position.x);
         actualz = Mathf.RoundToInt(transform.position.z);
         bool res = PathFinding(1,1, actualx, actualz, 1);
+
+        xObjetivo = 1;
+        zObjetivo = 1;
 
     }
 
@@ -120,17 +186,20 @@ public class Comportamiento : MonoBehaviour
     //Funcion ejecutada cuando los sensores persiben que se estanco el agente
     internal void MeEstanque()
     {
-        pathcount += 1;
-        int x = Mathf.RoundToInt(transform.position.x);
-        int z = Mathf.RoundToInt(transform.position.z);
-        if(state == 1)state = 2;
+        //pathcount += 1;
+        BuscarEspacioVacio();
+        //if (state == 1)state = 2;
         
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-
+        if (Mathf.RoundToInt(transform.position.x) == 1 && Mathf.RoundToInt(transform.position.z) == 1)
+        {
+            bateriaBaja = false;
+            batery = 100;
+        }
         //Caminando por espacios no visitados
         if (state == 1)
         {
@@ -239,9 +308,19 @@ public class Comportamiento : MonoBehaviour
         }
         else if (state == 3)
         {
+            if(xObjetivo == -1 && zObjetivo == -1)
+            {
+                BuscarBase();
+            }
+
 
             int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);
             int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);
+
+            int rauxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
+            int rauxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
+            int lauxnx = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
+            int lauxnz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
 
             if (nx != auxnx || nz != auxnz)
             {
@@ -251,18 +330,37 @@ public class Comportamiento : MonoBehaviour
 
             if ((pathfinding[nx][nz] <= pathfinding[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] && pathfinding[nx][nz]>= 1) && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5.0f || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
             {
-                
+                _sensores.VerLados();
+
                 int auxax = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.forward.x) * 0.4f);
                 int auxaz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.forward.z) * 0.4f);
 
 
-                if (Mathf.RoundToInt(transform.position.x) == 1 && Mathf.RoundToInt(transform.position.z) == 1)
+                if (Mathf.RoundToInt(transform.position.x) == xObjetivo && Mathf.RoundToInt(transform.position.z) == zObjetivo)
                 {
-                    batery = 100;
+                    
+                    map[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] = 1;
                     state = 1;
-                    bateriaBaja = false;
+                    
                 }
- 
+
+                if (ax != auxax || az != auxaz)
+                {
+                   
+                    ax = auxax;
+                    az = auxaz;
+
+                    if ((map[rauxnx][rauxnz] == 0 || map[lauxnx][lauxnz] == 0 || map[auxnx][auxnz] == 0) && xObjetivo != 1 && zObjetivo != 1)
+                    {
+                        transform.position = new Vector3(ax, transform.position.y, az);
+                        state = 1;
+                        nx = -1;
+                        nz = -1;
+                    }
+
+
+                }
+
 
                 _actuadores.Avanzar(vel_movimiento);
 
