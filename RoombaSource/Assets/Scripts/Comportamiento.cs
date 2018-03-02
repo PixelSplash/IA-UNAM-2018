@@ -245,16 +245,15 @@ public class Comportamiento : MonoBehaviour
                 _actuadores.RotarIzquierda(velocidadRotacion);
             }
         }
-
-        //
+        // Estado de busqueda direccionada
         else if (_estado == 2)
         {
-            if (_xObjetivo == -1 && _zObjetivo == -1)
+            if (_xObjetivo == -1 && _zObjetivo == -1) // si no se encontro camino, entonces se dirige a la base
             {
                 BuscarBase();
             }
 
-
+            // Calcula la posicion siguiente, la posicion a la derecha y la posicion a la izquierda en indices para la matriz
             _xPosicionAdelante = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);
             _zPosicionAdelante = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);
             _xPosicionDerecha = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
@@ -262,6 +261,7 @@ public class Comportamiento : MonoBehaviour
             _xPosicionIzquierda = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
             _zPosicionIzquierda = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
 
+            // Si la posicion al frente es la siguiente en el mapa de pathfinding, sigue adelante
             if ((_pathfinding[_xPosicionAdelante][_zPosicionAdelante] <= _pathfinding[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] && _pathfinding[_xPosicionAdelante][_zPosicionAdelante] >= 1) && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5.0f || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
             {
                 _sensores.VerLados();
@@ -269,7 +269,7 @@ public class Comportamiento : MonoBehaviour
                 int auxax = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.forward.x) * 0.4f);
                 int auxaz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.forward.z) * 0.4f);
 
-
+                // Si ya se llego al objetivo, pasa al Estado de busqueda libre
                 if (Mathf.RoundToInt(transform.position.x) == _xObjetivo && Mathf.RoundToInt(transform.position.z) == _zObjetivo)
                 {
 
@@ -278,12 +278,14 @@ public class Comportamiento : MonoBehaviour
 
                 }
 
+                // Cambie de lugar en la matriz
                 if (ax != auxax || az != auxaz)
                 {
 
                     ax = auxax;
                     az = auxaz;
 
+                    // Si no me dirijo a la base y veo espacios a mis lados, paso a modo de busqueda libre directamente
                     if ((_mapa[_xPosicionDerecha][_zPosicionDerecha] == 0 || _mapa[_xPosicionIzquierda][_zPosicionIzquierda] == 0 || _mapa[_xPosicionAdelante][_zPosicionAdelante] == 0) && _xObjetivo != 1 && _zObjetivo != 1)
                     {
                         transform.position = new Vector3(ax, transform.position.y, az);
@@ -304,7 +306,7 @@ public class Comportamiento : MonoBehaviour
                     _hayCamino = true;
                 }
             }
-            else
+            else // Si no tengo camino al frente, roto
             {
 
                 _hayCamino = false;
