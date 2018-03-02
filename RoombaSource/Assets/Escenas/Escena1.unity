@@ -386,7 +386,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 23
+  orthographic size: 16
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -409,7 +409,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 318498994}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 14.6, y: 31.8, z: 13.4}
+  m_LocalPosition: {x: 9.7, y: 30.5, z: 9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -510,7 +510,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4530c16f143b93b409c6ae94d581e7ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tamanoMapa: 30
+  tamanoMapa: 20
   pared: {fileID: 1503022545307762, guid: 25dc3a859cb17cb4d84319da0c178bd6, type: 2}
   basura: {fileID: 1166537188345114, guid: b499692e3db5b2347b4f05fa613d6ba4, type: 2}
 --- !u!4 &1044652337
@@ -777,6 +777,43 @@ Prefab:
       propertyPath: tiempoEstancado
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: tamanoMapa
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: marcaVisitado
+      value: 
+      objectReference: {fileID: 1199097342691606, guid: a82d4e5dcd4e25849a986982be4ef1d5,
+        type: 2}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: marcaPared
+      value: 
+      objectReference: {fileID: 1485695961577702, guid: f4e584dd1ba5f1f4d8ad0324de2d8dd0,
+        type: 2}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: velocidadMovimiento
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: velocidadRotacion
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: rapidezDeUsoBateria
+      value: 0.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 114303740931140484, guid: 855cfdbac4658cf4793fbd29b203cc2b,
+        type: 2}
+      propertyPath: imagenBateria
+      value: 
+      objectReference: {fileID: 803674715}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 855cfdbac4658cf4793fbd29b203cc2b, type: 2}
   m_IsPrefabParent: 0

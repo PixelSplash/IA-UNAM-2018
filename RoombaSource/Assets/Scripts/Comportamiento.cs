@@ -6,329 +6,263 @@ using UnityEngine.SceneManagement;
 
 public class Comportamiento : MonoBehaviour
 {
-    public GameObject bateryImage;
-    [SerializeField]
-    private float batery;
-    public float bateryUseRatio;
-    private int state;
-    public GameObject markvisited;
-    public GameObject markfree;
-    public GameObject markwall;
-    public float vel_rotacion;
-    public float vel_movimiento;
-    public int mapSize;
-    int[][] map;
-    private int[][] pathfinding;
-    private int[][] visitados;
-    int nx, nz, ax, az;
+    public GameObject imagenBateria; // Imagen que representa en pantalla la energia actual
+    public float bateria; // Energia almacenada en la bateria
+    public float rapidezDeUsoBateria;
+    private int _estado; // Estado de busqueda libre o estado de busqueda direccionada
+    public GameObject marcaVisitado; // Prefab para marcar espacios ya visitados
+    public GameObject marcaPared; // Prefab para marcar paredes
+    public float velocidadRotacion;
+    public float velocidadMovimiento;
+    public int tamanoMapa;
+    private int[][] _mapa; // Matriz que representa el escenario, -1 espacio no visitado, -2 pared, 0 espacio vacio, 1+ espacio ya visitado
+    private int[][] _pathfinding; // Matriz que guarda el camino descubierto por el algoritmo de pathfinding
+    private int[][] _visitados; // Matriz para marcar espacios ya visitados en el algoritmo de pathfinding
+    private bool _hayCamino; // Variable utilizada para saber el primer momento que se encuentra un camino, esto para alinear al agente
+    private int _marcadorVisitados; // numero a utilizar para marcar espacios visitados
+    public float normalizacionDePosicion; // distancia que se agrega al pivote del agente para hacer calculos
+    public bool bateriaBaja;
+    private int _xObjetivo; // coordenada x del objetivo para el estado de movimiento direccionado
+    private int _zObjetivo; // coordenada z del objetivo para el estado de movimiento direccionado
+    private bool _loEncontre; // Variable utilizada en el algoritmo de pathfinding
+    private Actuadores _actuadores;
+    private Sensores _sensores;
+    // Variables utilizadas para hacer la transicion de punto en el espacio con representacion en el mapa/ matriz
+    private int _xPosicionAdelante, _zPosicionAdelante, ax, az;
+    private int _xPosicionDerecha;
+    private int _zPosicionDerecha;
+    private int _xPosicionIzquierda;
+    private int _zPosicionIzquierda;
 
-    Actuadores _actuadores;
-    Sensores _sensores;
-
-    private bool hay_camino;
-    private int pathcount;
-    public float normalizacionDePosicion;
-    private bool bateriaBaja;
-    private int xObjetivo;
-    private int zObjetivo;
-    private bool loEncontre;
-
-
-    // Use this for initialization
+    // Inicializacion de variables
     void Start()
     {
-
         Screen.SetResolution(500, 500, true);
-
         bateriaBaja = false;
-        batery = 100;
-        pathcount = 1;
-        state = 1;
-        nx = nz = ax = az = 0;
-        hay_camino = false;
-        map = new int[mapSize][];
-        pathfinding = new int[mapSize][];
-        visitados = new int[mapSize][];
-        for (int i = 0; i < mapSize; i++)
+        _hayCamino = false;
+        bateria = 100;
+        _marcadorVisitados = 1;
+        _estado = 1; // Estado de busqueda libre
+        _xPosicionAdelante = _zPosicionAdelante = ax = az = 0;
+        
+        _mapa = new int[tamanoMapa][];
+        _pathfinding = new int[tamanoMapa][];
+        _visitados = new int[tamanoMapa][];
+
+        for (int i = 0; i < tamanoMapa; i++)
         {
-            map[i] = new int[mapSize];
-            pathfinding[i] = new int[mapSize];
-            visitados[i] = new int[mapSize];
-            for (int j = 0; j < mapSize; j++)
+            _mapa[i] = new int[tamanoMapa];
+            _pathfinding[i] = new int[tamanoMapa];
+            _visitados[i] = new int[tamanoMapa];
+
+            for (int j = 0; j < tamanoMapa; j++)
             {
-                map[i][j] = -1;
-                pathfinding[i][j] = 0;
-                visitados[i][j] = 0;
+                _mapa[i][j] = -1;
+                _pathfinding[i][j] = 0;
+                _visitados[i][j] = 0;
             }
         }
-        map[1][0] = -2;
 
         _actuadores = GetComponent<Actuadores>();
         _sensores = GetComponent<Sensores>();
-
-
-
     }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space)) // Reiniciar nivel
         {
             SceneManager.LoadScene("Escena1");
         }
-        batery -= bateryUseRatio;
-        if (batery < 50) bateriaBaja = true;
-        bateryImage.transform.localScale = new Vector3((batery/100.0f)*3, bateryImage.transform.localScale.y, bateryImage.transform.localScale.z);
+        if(bateria > rapidezDeUsoBateria)bateria -= rapidezDeUsoBateria; // Utilizar energia
+        imagenBateria.transform.localScale = new Vector3((bateria/100.0f)*3, imagenBateria.transform.localScale.y, imagenBateria.transform.localScale.z); // Actualizar escala de la imagen de la energia restante
 
     }
 
     internal void BuscarEspacioVacio()
     {
+        // Se inicializan en -1 para luego saber si no hay camino
+        _xObjetivo = -1;
+        _zObjetivo = -1;
 
-        xObjetivo = -1;
-        zObjetivo = -1;
+        _loEncontre = false; // Se utiliza para parar la busqueda al encontrar el primer camino
+        _estado = 2; // Se pasa al estado direccionado
 
-        loEncontre = false;
-        state = 3;
-        for (int i = 0; i < mapSize; i++)
+        // Se limpian las matrices necesarias
+        for (int i = 0; i < tamanoMapa; i++)
         {
-            for (int j = 0; j < mapSize; j++)
+            for (int j = 0; j < tamanoMapa; j++)
             {
-                pathfinding[i][j] = 0;
-                visitados[i][j] = 0;
+                _pathfinding[i][j] = 0;
+                _visitados[i][j] = 0;
             }
         }
 
+        // Se marca el espacio en donde se encuentra el agente y se llama a la funcion de pathfinding
         int actualx, actualz;
         actualx = Mathf.RoundToInt(transform.position.x);
         actualz = Mathf.RoundToInt(transform.position.z);
-        map[actualx][actualz] = pathcount;
-        bool res = PathFindingEspacios(actualx, actualz, mapSize*mapSize);
+        _mapa[actualx][actualz] = _marcadorVisitados;
+        bool res = PathFindingEspacios(actualx, actualz, tamanoMapa*tamanoMapa);
 
     }
 
+    // Va marcando el camino a seguir con numeros y los va disminuyendo, asi el agente sabe por donde debe de pasar
     internal bool PathFindingEspacios(int x, int z, int count)
     {
-        if (loEncontre) return false;
-        if (x < 0 || z < 0 || x >= mapSize || z >= mapSize) return false;
+        if (_loEncontre) return false; // Si ya se encontro camino para la ejecucion
+        if (x < 0 || z < 0 || x >= tamanoMapa || z >= tamanoMapa) return false; // Parametros no validos
 
-        if (map[x][z] == 0)
+        if (_mapa[x][z] == 0) // Encontro espacio vacio
         {
-            loEncontre = true;
-            pathfinding[x][z] = count;
-            xObjetivo = x;
-            zObjetivo = z;
+            _loEncontre = true;
+            _pathfinding[x][z] = count;
+            _xObjetivo = x;
+            _zObjetivo = z;
             return true;
         }
 
-        if (visitados[x][z] == 1 || map[x][z] < 0) return false;
+        if (_visitados[x][z] == 1 || _mapa[x][z] < 0) return false; // Espacio es una pared o ya se visito
 
-        visitados[x][z] = 1;
+        _visitados[x][z] = 1; // Se marca como visitado
+
+        // Se manda a buscar camino a las 4 direcciones
         bool res = false;
         if (PathFindingEspacios(x + 1, z, count - 1)) res = true;
         if (PathFindingEspacios(x - 1, z, count - 1)) res = true;
         if (PathFindingEspacios(x, z + 1, count - 1)) res = true;
         if (PathFindingEspacios(x, z - 1, count - 1)) res = true;
-        if (res)
+
+        if (res) // Si existe algun camino por este espacio, se marca
         {
-            //print("Encontre Camino");
-            //print(x);
-            //print(z);
-            pathfinding[x][z] = count;
+            _pathfinding[x][z] = count;
         }
         return res;
     }
 
     internal void BuscarBase()
     {
-        state = 3;
-        for (int i = 0; i < mapSize; i++)
+        _estado = 2; // Se pasa al estado direccionado
+
+        // Se limpian las matrices necesarias
+        for (int i = 0; i < tamanoMapa; i++)
         {
-            for (int j = 0; j < mapSize; j++)
+            for (int j = 0; j < tamanoMapa; j++)
             {
-                pathfinding[i][j] = 0;
-                visitados[i][j] = 0;
+                _pathfinding[i][j] = 0;
+                _visitados[i][j] = 0;
             }
         }
 
+        // Se llama a la funcion de pathfinding
         int actualx, actualz;
         actualx = Mathf.RoundToInt(transform.position.x);
         actualz = Mathf.RoundToInt(transform.position.z);
-        bool res = PathFinding(1,1, actualx, actualz, 1);
+        bool res = PathFindingBase(1,1, actualx, actualz, 1);
 
-        xObjetivo = 1;
-        zObjetivo = 1;
+        // se define la base de carga como objetivo
+        _xObjetivo = 1;
+        _zObjetivo = 1;
 
     }
 
-    internal bool PathFinding(int x, int z, int fx, int fz, int count)
+    // Va marcando el camino a seguir con numeros y los va aumentando, ya que empieza desde la base, asi el agente sabe por donde debe de pasar
+    internal bool PathFindingBase(int x, int z, int fx, int fz, int count)
     {
-        if (x == fx && z == fz)
+        if (x == fx && z == fz) // Encontro el objetivo
         {
-            pathfinding[x][z] = count;
+            _pathfinding[x][z] = count;
             return true;
         }
-        if (x < 0 || z < 0 || x >= mapSize || z >= mapSize) return false;
-        if (visitados[x][z] == 1 || map[x][z] <= 0) return false;
-        
-        visitados[x][z] = 1;
+
+        if (x < 0 || z < 0 || x >= tamanoMapa || z >= tamanoMapa) return false; // Parametros no validos
+        if (_visitados[x][z] == 1 || _mapa[x][z] <= 0) return false; // Espacio es una pared o ya se visito
+
+        _visitados[x][z] = 1; // Se marca como visitado
+
+        // Se manda a buscar camino a las 4 direcciones
         bool res = false;
-        if (PathFinding(x + 1, z, fx, fz, count + 1)) res = true;
-        if (PathFinding(x - 1, z, fx, fz, count + 1)) res = true;
-        if (PathFinding(x, z + 1, fx, fz, count + 1)) res = true;
-        if (PathFinding(x, z - 1, fx, fz, count + 1)) res = true;
-        if (res)
+        if (PathFindingBase(x + 1, z, fx, fz, count + 1)) res = true;
+        if (PathFindingBase(x - 1, z, fx, fz, count + 1)) res = true;
+        if (PathFindingBase(x, z + 1, fx, fz, count + 1)) res = true;
+        if (PathFindingBase(x, z - 1, fx, fz, count + 1)) res = true;
+
+        if (res) // Si existe algun camino por este espacio, se marca
         {
-            pathfinding[x][z] = count;
+            _pathfinding[x][z] = count;
         }
         return res;
     }
 
-    //Funcion ejecutada cuando los sensores persiben que se estanco el agente
-    internal void MeEstanque()
-    {
-        //pathcount += 1;
-        BuscarEspacioVacio();
-        //if (state == 1)state = 2;
-        
-    }
-
-    // Update is called once per frame
+    // Se utiliza Fixed Update para mas precision en los calculos y uso de fisicas
     void FixedUpdate()
     {
-        if (Mathf.RoundToInt(transform.position.x) == 1 && Mathf.RoundToInt(transform.position.z) == 1)
+        if (Mathf.RoundToInt(transform.position.x) == 1 && Mathf.RoundToInt(transform.position.z) == 1) // Si pasa por la base se recarga instantaneamente
         {
             bateriaBaja = false;
-            batery = 100;
+            bateria = 100;
         }
-        //Caminando por espacios no visitados
-        if (state == 1)
+
+
+        // Estado de busqueda libre, va avanzando por espacios no visitados
+        if (_estado == 1)
         {
-        
-           
-            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x)* normalizacionDePosicion);
-            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z)* normalizacionDePosicion);
 
+            // Calcula la posicion siguiente en indices para la matriz
+            _xPosicionAdelante = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);
+            _zPosicionAdelante = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);
 
-            if (nx != auxnx || nz != auxnz)
+            // Si la siguiente posicion esta vacia o es desconocida, siguen adelante, solo entra cuando se esta en angulo modulo 90
+            if (_mapa[_xPosicionAdelante][_zPosicionAdelante] <= 0 && _mapa[_xPosicionAdelante][_zPosicionAdelante] != -2 && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5 || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
             {
-                nx = auxnx;
-                nz = auxnz;
-            }
 
-            if(map[nx][nz] <=0 && map[nx][nz] != -2 && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5 || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
-            {
-               
                 int auxax = Mathf.RoundToInt(transform.position.x);
                 int auxaz = Mathf.RoundToInt(transform.position.z);
 
+                // Ya se avanzo de posicion en la matriz
                 if (ax != auxax || az != auxaz)
                 {
-                    if (bateriaBaja) BuscarBase();
+                    if (bateriaBaja) BuscarBase(); // Bateria baja, tiene que ir a recargar
                     _sensores.VerLados();
-                    Instantiate(markvisited, new Vector3(auxax, 5, auxaz), Quaternion.identity);
 
-                    map[ax][az] = pathcount;
-                    ax = auxax;
-                    az = auxaz;
-             
-                    
-                }
-                
-                _actuadores.Avanzar(vel_movimiento);
-                if (!hay_camino)
-                {
-                    _actuadores.Alinear();
-                    hay_camino = true;
-                }
-            }
-            else
-            {
-            hay_camino = false;
-            _actuadores.RotarIzquierda(vel_rotacion);
-            }
-        }
-            
-        //Caminando por espacios ya visitados, buscando por donde no ha estado
-        else if(state == 2)
-        {
-
-            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);
-            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);
-
-            int rauxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
-            int rauxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
-            int lauxnx = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
-            int lauxnz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
-
-            if (nx != auxnx || nz != auxnz)
-            {
-                nx = auxnx;
-                nz = auxnz;
-            }
-
-            if (map[nx][nz] < pathcount && map[nx][nz] != -2 && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5.0f || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
-            {
-                _sensores.VerLados();
-
-                int auxax = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.forward.x) * 0.4f);
-                int auxaz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.forward.z) * 0.4f);
-
-                if (ax != auxax || az != auxaz)
-                {
-                    if (bateriaBaja) BuscarBase();
-                    //map[ax][az] = pathcount + 2;
-                    map[ax][az] = pathcount;
+                    Instantiate(marcaVisitado, new Vector3(auxax, 5, auxaz), Quaternion.identity);
+                    _mapa[ax][az] = _marcadorVisitados;
                     ax = auxax;
                     az = auxaz;
 
-                    if(map[rauxnx][rauxnz] == 0 || map[lauxnx][lauxnz] == 0 || map[auxnx][auxnz] == 0)
-                    {
-                        transform.position = new Vector3(ax, transform.position.y, az);
-                        state = 1;
-                        nx = -1;
-                        nz = -1;
-                    }
-
-
                 }
 
-                _actuadores.Avanzar(vel_movimiento);
-                if (!hay_camino)
+                _actuadores.Avanzar(velocidadMovimiento);
+
+                if (!_hayCamino) // Si es el primer frame en el que encontro camino, se alinea, osea arregla su angulo y posicion
                 {
                     _actuadores.Alinear();
-                    hay_camino = true;
+                    _hayCamino = true;
                 }
             }
-            else
+            else // Si no hay camino al frente, rota
             {
- 
-                hay_camino = false;
-                _actuadores.RotarIzquierda(vel_rotacion);
+                _hayCamino = false;
+                _actuadores.RotarIzquierda(velocidadRotacion);
             }
         }
-        else if (state == 3)
+
+        //
+        else if (_estado == 2)
         {
-            if(xObjetivo == -1 && zObjetivo == -1)
+            if (_xObjetivo == -1 && _zObjetivo == -1)
             {
                 BuscarBase();
             }
 
 
-            int auxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);
-            int auxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);
+            _xPosicionAdelante = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.forward.x) * normalizacionDePosicion);
+            _zPosicionAdelante = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.forward.z) * normalizacionDePosicion);
+            _xPosicionDerecha = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
+            _zPosicionDerecha = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
+            _xPosicionIzquierda = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
+            _zPosicionIzquierda = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
 
-            int rauxnx = Mathf.RoundToInt(transform.position.x + Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
-            int rauxnz = Mathf.RoundToInt(transform.position.z + Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
-            int lauxnx = Mathf.RoundToInt(transform.position.x - Mathf.RoundToInt(transform.right.x) * normalizacionDePosicion);
-            int lauxnz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.right.z) * normalizacionDePosicion);
-
-            if (nx != auxnx || nz != auxnz)
-            {
-                nx = auxnx;
-                nz = auxnz;
-            }
-
-            if ((pathfinding[nx][nz] <= pathfinding[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] && pathfinding[nx][nz]>= 1) && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5.0f || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
+            if ((_pathfinding[_xPosicionAdelante][_zPosicionAdelante] <= _pathfinding[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] && _pathfinding[_xPosicionAdelante][_zPosicionAdelante] >= 1) && (Mathf.Abs(transform.eulerAngles.y) % 90.0f < 5.0f || Mathf.Abs(transform.eulerAngles.y) % 90.0f > 85.0f))
             {
                 _sensores.VerLados();
 
@@ -336,49 +270,56 @@ public class Comportamiento : MonoBehaviour
                 int auxaz = Mathf.RoundToInt(transform.position.z - Mathf.RoundToInt(transform.forward.z) * 0.4f);
 
 
-                if (Mathf.RoundToInt(transform.position.x) == xObjetivo && Mathf.RoundToInt(transform.position.z) == zObjetivo)
+                if (Mathf.RoundToInt(transform.position.x) == _xObjetivo && Mathf.RoundToInt(transform.position.z) == _zObjetivo)
                 {
-                    
-                    map[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] = 1;
-                    state = 1;
-                    
+
+                    _mapa[Mathf.RoundToInt(transform.position.x)][Mathf.RoundToInt(transform.position.z)] = 1;
+                    _estado = 1;
+
                 }
 
                 if (ax != auxax || az != auxaz)
                 {
-                   
+
                     ax = auxax;
                     az = auxaz;
 
-                    if ((map[rauxnx][rauxnz] == 0 || map[lauxnx][lauxnz] == 0 || map[auxnx][auxnz] == 0) && xObjetivo != 1 && zObjetivo != 1)
+                    if ((_mapa[_xPosicionDerecha][_zPosicionDerecha] == 0 || _mapa[_xPosicionIzquierda][_zPosicionIzquierda] == 0 || _mapa[_xPosicionAdelante][_zPosicionAdelante] == 0) && _xObjetivo != 1 && _zObjetivo != 1)
                     {
                         transform.position = new Vector3(ax, transform.position.y, az);
-                        state = 1;
-                        nx = -1;
-                        nz = -1;
+                        _estado = 1;
+                        _xPosicionAdelante = -1;
+                        _zPosicionAdelante = -1;
                     }
 
 
                 }
 
 
-                _actuadores.Avanzar(vel_movimiento);
+                _actuadores.Avanzar(velocidadMovimiento);
 
-                if (!hay_camino)
+                if (!_hayCamino)
                 {
                     _actuadores.Alinear();
-                    hay_camino = true;
+                    _hayCamino = true;
                 }
             }
             else
             {
 
-                hay_camino = false;
-                _actuadores.RotarIzquierda(vel_rotacion);
+                _hayCamino = false;
+                _actuadores.RotarIzquierda(velocidadRotacion);
             }
         }
     }
 
+    // Funcion ejecutada cuando los sensores persiben que se estanco el agente
+    internal void MeEstanque()
+    {
+        BuscarEspacioVacio();   
+    }
+
+    // Marca el espacio vacio en el mapa del escenario, poniendo un 0 en la posicion de este
     internal void ViEspacioVacio(Vector3 aux)
     {
         
@@ -386,33 +327,31 @@ public class Comportamiento : MonoBehaviour
         x = Mathf.RoundToInt(aux.x);
         z = Mathf.RoundToInt(aux.z);
 
-        if(x >= 0 && x < mapSize && z >= 0 && z < mapSize)
+        if(x >= 0 && x < tamanoMapa && z >= 0 && z < tamanoMapa)
         {
 
-            if (map[x][z] == -1)
+            if (_mapa[x][z] == -1)
             {
 
-                map[x][z] = 0;
+                _mapa[x][z] = 0;
             }
         }
         
 
     }
 
+    // Marca la pared en el mapa del escenario, poniendo un -1 en la posicion de este e instancia el marcador rojo de pared
     internal void ViPared(Vector3 aux)
     {
-
-        
         int x, z;
         x = Mathf.RoundToInt(aux.x);
         z = Mathf.RoundToInt(aux.z);
-        if (x >= 0 && x < mapSize && z >= 0 && z < mapSize)
+        if (x >= 0 && x < tamanoMapa && z >= 0 && z < tamanoMapa)
         {
-            Instantiate(markwall, new Vector3(x, 5, z), Quaternion.identity);
-            if (map[x][z] == -1)
+            Instantiate(marcaPared, new Vector3(x, 5, z), Quaternion.identity);
+            if (_mapa[x][z] == -1)
             {
-                
-                map[x][z] = -2;
+                _mapa[x][z] = -2;
             }
         }
     }

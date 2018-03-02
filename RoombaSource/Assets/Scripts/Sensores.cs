@@ -9,6 +9,7 @@ public class Sensores : MonoBehaviour {
     public float tiempoEstancado; // Tiempo en el que se considera que se esta estancado
     public float rangoDeVision; // Es la longitud del rayo de los sensores
 
+
     // Use this for initialization
     void Start () {
         _pos = transform.position;
@@ -18,7 +19,10 @@ public class Sensores : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if(_pos == transform.position)
+
+        if (_comportamiento.bateria < 50) _comportamiento.bateriaBaja = true;
+
+        if (_pos == transform.position)
         {
             _tiempoQuieto++; // Esta en el mismo lugar que el frame anterior
         }
