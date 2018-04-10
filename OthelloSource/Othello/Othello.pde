@@ -25,6 +25,7 @@ void turno() {
   if (jugada.jugadaValida((mouseY/tamano), (mouseX/tamano), jugadorActual, tablero)) {
     tablero.setFicha((mouseY/tamano), (mouseX/tamano), jugadorActual);
     jugada.swap((mouseY/tamano), (mouseX/tamano), tablero, jugadorActual);
+    tablero.display();
     if (tieneJugadaValida(oponente())) {
       jugadorActual = 2;
     } else {
@@ -35,7 +36,7 @@ void turno() {
 
 void draw() {
   try {
-    Thread.sleep(500);
+    Thread.sleep(100);
   }
   catch(Exception e) {
   }

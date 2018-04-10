@@ -3,7 +3,7 @@ import java.util.ArrayList;
 class Minimax {
   private ConfiguracionTablero configuracion;
   private int jugadorActual; 
-  private final int PROFUNDIDAD_ARBOL = 4;
+  private final int PROFUNDIDAD_ARBOL = 2;
   private ArrayList<Node<Tablero>> hojas;
   Minimax(int jugadorActual) {
     this.jugadorActual = jugadorActual;
@@ -12,7 +12,7 @@ class Minimax {
     //PROFUNDIDAD_ARBOL = 4;
   }
   /**
-   * Metodo que regresa las coodenadas en las que se deberan tirar la computadora siguiedo el algoritmo de minimax 
+   * Metodo que regresa las coordenadas en las que se deberan tirar la computadora siguiedo el algoritmo de minimax 
    * @param tablero tablero actual del juego 
    * @return  arreglo de integers que representan la posicion que en la que se tiro la ficha
    */
