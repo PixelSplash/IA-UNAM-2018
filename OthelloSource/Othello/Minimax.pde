@@ -61,28 +61,31 @@ class Minimax {
     
   }
   private int minimax(Node<Tablero> nodo, int depth, boolean maximizingPlayer) {
+    //print(nodo.getData());
+    int bestValue;
     if (depth == 0 || nodo.isLeaf()) {
+      //print("finale\n");
       int valor = configuracion.heuristica(1, nodo.getData());
       nodo.setUtilidad(valor);
       hojas.add(nodo);
       return valor;
     }
     if (maximizingPlayer) {
-      int bestValue = Integer.MIN_VALUE;
+      //print("maxi\n");
+      bestValue = Integer.MIN_VALUE;
       for (Node<Tablero> child : nodo.getChildren()) {
         int v = minimax(child, depth-1, false);
         bestValue = Math.max(bestValue, v);
-        return bestValue;
       }
     } else {
-      int bestValue = Integer.MAX_VALUE;
+      //print("mini\n");
+      bestValue = Integer.MAX_VALUE;
       for (Node<Tablero> child : nodo.getChildren()) {
         int v = minimax(child, depth-1, true);
         bestValue = Math.min(bestValue, v);
-        return bestValue;
       }
     }
-    return 0;
+    return bestValue;
   }
 }
 
@@ -151,27 +154,39 @@ class ConfiguracionTablero {
    * @return 
    */
   int heuristica(int jugador, Tablero tablero) {
+    dificultad = 3;
     int score=0;
-    int oponente = (jugadorActual == 1)?2:1;
     
-    if(dificultad > 0){
-      for (int i =0; i<8; i++) {
-        for (int j=0; j<8; j++) {
-          if (tablero.getFicha(i, j)==jugadorActual) {
-            if(jugador==jugadorActual)score++;
-            else score--;
+    //int oponente = (jugadorActual == 1)?2:1;
+    
+    
+    for (int i =0; i<8; i++) {
+      for (int j=0; j<8; j++) {
+        if (tablero.getFicha(i, j)==2) {
+          if(dificultad > 0){        
+            score++;
           }
-          else if (tablero.getFicha(i, j)==oponente){
-            if(jugador==jugadorActual)score--;
-            else score++;
+          else if(dificultad > 1){
+            if(i == 0 || j == 0 || i == 7 || j == 7)score+= 5;
+          }
+          else if(dificultad > 2){
           }
         }
+        else if (tablero.getFicha(i, j)==1){
+          if(dificultad > 0){        
+            score--;
+          }
+          else if(dificultad > 1){
+            if(i == 0 || j == 0 || i == 7 || j == 7)score-= 5;
+          }
+          else if(dificultad > 2){
+          }
+        }
+        
       }
     }
-    else if(dificultad > 1){
-    }
-    else if(dificultad > 2){
-    }
+    
+   
     return score;
   }
 }
