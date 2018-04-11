@@ -3,13 +3,17 @@ import java.util.ArrayList;
 class Minimax {
   private ConfiguracionTablero configuracion;
   private int jugadorActual; 
-  private final int PROFUNDIDAD_ARBOL = 2;
+  private int dificultad;
+  private int profundidadArbol;
   private ArrayList<Node<Tablero>> hojas;
-  Minimax(int jugadorActual) {
+  Minimax(int jugadorActual, int dif) {
     this.jugadorActual = jugadorActual;
     hojas = new ArrayList<Node<Tablero>>();
     configuracion = new ConfiguracionTablero();
-    //PROFUNDIDAD_ARBOL = 4;
+    dificultad = dif;
+    if(dificultad == 1)profundidadArbol = 1;
+    if(dificultad == 2)profundidadArbol = 3;
+    if(dificultad == 3)profundidadArbol = 5;
   }
   /**
    * Metodo que regresa las coordenadas en las que se deberan tirar la computadora siguiedo el algoritmo de minimax 
@@ -21,8 +25,8 @@ class Minimax {
     Node<Tablero> arbol = new Node<Tablero>(tablero);
 
     //ConfiguracionTablero desiciones = new ConfiguracionTablero();
-    arbol = configuracion.crearConfiguracionesTablero(jugadorActual, arbol, PROFUNDIDAD_ARBOL);
-    int valor = minimax(arbol, PROFUNDIDAD_ARBOL, true);
+    arbol = configuracion.crearConfiguracionesTablero(jugadorActual, arbol, profundidadArbol);
+    int valor = minimax(arbol, profundidadArbol, true);
     println("El valor de la Heuristica es = "+ valor);
     
     Node<Tablero> mejorJugada = null;
@@ -147,25 +151,27 @@ class ConfiguracionTablero {
    * @return 
    */
   int heuristica(int jugador, Tablero tablero) {
-    int fav=0;
-    int noFav=0;
+    int score=0;
     int oponente = (jugadorActual == 1)?2:1;
-    for (int i =0; i<8; i++) {
-      for (int j=0; j<8; j++) {
-        if (tablero.getFicha(i, j)==jugadorActual && jugador==jugadorActual) {
-          fav++;
-        }
-        if (tablero.getFicha(i, j)==oponente && jugador==jugadorActual) {
-          noFav++;
-        }
-        if (tablero.getFicha(i, j)==jugadorActual && jugador==oponente) {
-          noFav++;
-        }
-        if (tablero.getFicha(i, j)==oponente && jugador==oponente) {
-          fav++;
+    
+    if(dificultad > 0){
+      for (int i =0; i<8; i++) {
+        for (int j=0; j<8; j++) {
+          if (tablero.getFicha(i, j)==jugadorActual) {
+            if(jugador==jugadorActual)score++;
+            else score--;
+          }
+          else if (tablero.getFicha(i, j)==oponente){
+            if(jugador==jugadorActual)score--;
+            else score++;
+          }
         }
       }
     }
-    return fav-noFav;
+    else if(dificultad > 1){
+    }
+    else if(dificultad > 2){
+    }
+    return score;
   }
 }

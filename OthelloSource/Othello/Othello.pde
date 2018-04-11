@@ -2,6 +2,7 @@ int jugadorActual = 1;
 int alto = 8;
 int ancho = 8;
 int tamano = 100 ;
+int dificultad = 3;
 Tablero tablero;
 ConfiguracionTablero configuracion;
 JugadaTablero jugada;
@@ -76,7 +77,7 @@ boolean tieneJugadaValida(int jugador) {
   return false;
 }
 void agente() {
-  Minimax tiro = new Minimax(2);
+  Minimax tiro = new Minimax(2,dificultad);
   int[] posicionTiro = tiro.elecionMinimax(tablero);
   println("Posicion  de tiro de Minimax = (" +posicionTiro[0]+","+posicionTiro[1]+")." );
   if (jugada.jugadaValida(posicionTiro[0], posicionTiro[1], 2, tablero)) {
