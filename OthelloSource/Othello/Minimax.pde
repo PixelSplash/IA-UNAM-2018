@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 class Minimax {
+  private final int debug = 0;
   private ConfiguracionTablero configuracion;
   private int jugadorActual; 
   private int dificultad;
@@ -12,7 +13,7 @@ class Minimax {
     configuracion = new ConfiguracionTablero();
     dificultad = dif;
     if(dificultad == 1)profundidadArbol = 1;
-    if(dificultad == 2)profundidadArbol = 3;
+    if(dificultad == 2)profundidadArbol = 2;
     if(dificultad == 3)profundidadArbol = 5;
   }
   /**
@@ -61,30 +62,34 @@ class Minimax {
     
   }
   private int minimax(Node<Tablero> nodo, int depth, boolean maximizingPlayer) {
-    //print(nodo.getData());
+    
     int bestValue;
     if (depth == 0 || nodo.isLeaf()) {
-      //print("finale\n");
-      int valor = configuracion.heuristica(1, nodo.getData());
+      //if(debug == 1)print("finale\n");
+      int valor = configuracion.heuristica(maximizingPlayer, nodo.getData());
+      //if(debug == 1)print(valor);
+      //if(debug == 1)print("\n");
       nodo.setUtilidad(valor);
       hojas.add(nodo);
       return valor;
     }
     if (maximizingPlayer) {
-      //print("maxi\n");
+      if(debug == 1)print("maxi\n");
       bestValue = Integer.MIN_VALUE;
       for (Node<Tablero> child : nodo.getChildren()) {
         int v = minimax(child, depth-1, false);
         bestValue = Math.max(bestValue, v);
       }
     } else {
-      //print("mini\n");
+      if(debug == 1)print("mini\n");
       bestValue = Integer.MAX_VALUE;
       for (Node<Tablero> child : nodo.getChildren()) {
         int v = minimax(child, depth-1, true);
         bestValue = Math.min(bestValue, v);
       }
     }
+    if(debug == 1)print(nodo.getData());
+    if(debug == 1)print(bestValue+ "\n");
     return bestValue;
   }
 }
@@ -153,40 +158,57 @@ class ConfiguracionTablero {
    * @param tablero configuracion de un tablero de othelo 
    * @return 
    */
-  int heuristica(int jugador, Tablero tablero) {
-    dificultad = 3;
+  int heuristica(boolean jug, Tablero tablero) {
+    int dif = 3;
     int score=0;
-    
-    //int oponente = (jugadorActual == 1)?2:1;
-    
+    int jugador = (!jug)?2:1;
+    int oponente = (jugador == 1)?2:1;
     
     for (int i =0; i<8; i++) {
       for (int j=0; j<8; j++) {
-        if (tablero.getFicha(i, j)==2) {
-          if(dificultad > 0){        
+        if (tablero.getFicha(i, j) == 2) {
+          if(dif > 0){        
             score++;
           }
-          else if(dificultad > 1){
-            if(i == 0 || j == 0 || i == 7 || j == 7)score+= 5;
+          if(dif > 1){
+            if(i == 0 || j == 0 || i == 7 || j == 7){
+              score+= 5;
+              //print("Si entro");
+              //if(jugador == 2)score+= 20;
+            }
           }
-          else if(dificultad > 2){
+          if(dif > 2){
+            if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
+              score+= 5;
+              //print("Si entro");
+              //if(jugador == 2)score+= 50;
+            }
           }
         }
-        else if (tablero.getFicha(i, j)==1){
-          if(dificultad > 0){        
+        else if (tablero.getFicha(i, j) == 1){
+          if(dif > 0){        
             score--;
           }
-          else if(dificultad > 1){
-            if(i == 0 || j == 0 || i == 7 || j == 7)score-= 5;
+          if(dif > 1){
+            if(i == 0 || j == 0 || i == 7 || j == 7){
+              score-= 10;
+            }
+            
+            
           }
-          else if(dificultad > 2){
+          if(dificultad > 2){
+            if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
+              score-= 10;
+            }
           }
         }
         
       }
     }
     
-   
+   print(tablero);
+   print(score);
+   print("\n");
     return score;
   }
 }
