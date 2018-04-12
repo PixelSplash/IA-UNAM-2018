@@ -14,8 +14,15 @@ class Minimax {
     dificultad = dif;
     if(dificultad == 1)profundidadArbol = 1;
     if(dificultad == 2)profundidadArbol = 2;
-    if(dificultad == 3)profundidadArbol = 5;
+    if(dificultad == 3)profundidadArbol = 4;
   }
+  public void setDificultad(int dif){
+    dificultad = dif;
+    if(dificultad == 1)profundidadArbol = 1;
+    if(dificultad == 2)profundidadArbol = 2;
+    if(dificultad == 3)profundidadArbol = 4;
+  }
+  
   /**
    * Metodo que regresa las coordenadas en las que se deberan tirar la computadora siguiedo el algoritmo de minimax 
    * @param tablero tablero actual del juego 
@@ -65,31 +72,35 @@ class Minimax {
     
     int bestValue;
     if (depth == 0 || nodo.isLeaf()) {
-      //if(debug == 1)print("finale\n");
-      int valor = configuracion.heuristica(maximizingPlayer, nodo.getData());
-      //if(debug == 1)print(valor);
-      //if(debug == 1)print("\n");
+      if(debug == 1)print("finale\n");
+      int valor = configuracion.heuristica(nodo.getData(), dificultad);
+      if(debug == 1)print(valor);
+      if(debug == 1)print("\n");
       nodo.setUtilidad(valor);
-      hojas.add(nodo);
-      return valor;
+      //hojas.add(nodo);
+      bestValue = valor;
     }
-    if (maximizingPlayer) {
-      if(debug == 1)print("maxi\n");
+    else if (maximizingPlayer) {
+      
       bestValue = Integer.MIN_VALUE;
       for (Node<Tablero> child : nodo.getChildren()) {
         int v = minimax(child, depth-1, false);
         bestValue = Math.max(bestValue, v);
       }
+      if(debug == 1)print("maxi\n");
     } else {
-      if(debug == 1)print("mini\n");
+      
       bestValue = Integer.MAX_VALUE;
       for (Node<Tablero> child : nodo.getChildren()) {
         int v = minimax(child, depth-1, true);
         bestValue = Math.min(bestValue, v);
       }
+      if(debug == 1)print("mini\n");
     }
     if(debug == 1)print(nodo.getData());
     if(debug == 1)print(bestValue+ "\n");
+    nodo.setUtilidad(bestValue);
+    if(depth == profundidadArbol - 1)hojas.add(nodo);
     return bestValue;
   }
 }
@@ -158,47 +169,67 @@ class ConfiguracionTablero {
    * @param tablero configuracion de un tablero de othelo 
    * @return 
    */
-  int heuristica(boolean jug, Tablero tablero) {
-    int dif = 3;
+  int heuristica(Tablero tablero, int dif) {
     int score=0;
-    int jugador = (!jug)?2:1;
-    int oponente = (jugador == 1)?2:1;
-    
     for (int i =0; i<8; i++) {
       for (int j=0; j<8; j++) {
         if (tablero.getFicha(i, j) == 2) {
           if(dif > 0){        
-            score++;
+            
           }
+          
           if(dif > 1){
-            if(i == 0 || j == 0 || i == 7 || j == 7){
-              score+= 5;
-              //print("Si entro");
-              //if(jugador == 2)score+= 20;
-            }
+            score++;
+            
           }
           if(dif > 2){
-            if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
+            if(i == 0 || j == 0 || i == 7 || j == 7){
               score+= 5;
-              //print("Si entro");
-              //if(jugador == 2)score+= 50;
+            }
+            if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
+              score+= 10;
+            }
+            if((i == 1 || i == 6) && (j == 0 || j == 1 || j == 6 || j == 7)){
+              score-= 10;
+            }
+            if((j == 1 || j == 6) && (i == 0 || i == 1 || i == 6 || i == 7)){
+              score-= 10;
+            }
+            if((i > 1 && i < 6) && (j == 1 || j == 6)){
+              score-= 2;
+            }
+            if((j > 1 && j < 6) && (i == 1 || i == 6)){
+              score-= 2;
             }
           }
         }
         else if (tablero.getFicha(i, j) == 1){
           if(dif > 0){        
-            score--;
+            
           }
           if(dif > 1){
-            if(i == 0 || j == 0 || i == 7 || j == 7){
-              score-= 10;
-            }
-            
+            score--;
             
           }
           if(dificultad > 2){
+            if(i == 0 || j == 0 || i == 7 || j == 7){
+              score-= 5;
+            }
             if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
               score-= 10;
+            }
+            if((i == 1 || i == 6) && (j == 0 || j == 1 || j == 6 || j == 7)){
+              score+= 10;
+            }
+            if((j == 1 || j == 6) && (i == 0 || i == 1 || i == 6 || i == 7)){
+              score+= 10;
+            }
+            
+            if((i > 1 && i < 6) && (j == 1 || j == 6)){
+              score+= 2;
+            }
+            if((j > 1 && j < 6) && (i == 1 || i == 6)){
+              score+= 2;
             }
           }
         }
@@ -206,9 +237,9 @@ class ConfiguracionTablero {
       }
     }
     
-   print(tablero);
-   print(score);
-   print("\n");
+   //print(tablero);
+   //print(score);
+   //print("\n");
     return score;
   }
 }

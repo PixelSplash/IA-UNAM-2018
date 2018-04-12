@@ -2,10 +2,26 @@ int jugadorActual = 1;
 int alto = 8;
 int ancho = 8;
 int tamano = 100 ;
-int dificultad = 3;
+int dificultad = 1;
 Tablero tablero;
 ConfiguracionTablero configuracion;
 JugadaTablero jugada;
+
+void keyPressed() {
+  if (key == '1'){
+    print("Dificultad cambiada a 1\n");
+    dificultad = 1;
+  }
+  if (key == '2'){
+    print("Dificultad cambiada a 2\n");
+    dificultad = 2;
+  }
+  if (key == '3'){
+    print("Dificultad cambiada a 3\n");
+    dificultad = 3;
+  }
+}
+
 void settings() {
   size(tamano*8, tamano*8);
 }
