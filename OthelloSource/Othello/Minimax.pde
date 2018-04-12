@@ -16,6 +16,12 @@ class Minimax {
     if(dificultad == 2)profundidadArbol = 2;
     if(dificultad == 3)profundidadArbol = 4;
   }
+  
+    /**
+   * Metodo para cambiar la variable dificultad y profundidad del minimax
+   * @param dif nueva dificultad
+   * @return
+   */
   public void setDificultad(int dif){
     dificultad = dif;
     if(dificultad == 1)profundidadArbol = 1;
@@ -29,10 +35,8 @@ class Minimax {
    * @return  arreglo de integers que representan la posicion que en la que se tiro la ficha
    */
   public int[] elecionMinimax(Tablero tablero) {
-    Tablero original = tablero.copiaTablero(); // por si las dudas
+    Tablero original = tablero.copiaTablero();
     Node<Tablero> arbol = new Node<Tablero>(tablero);
-
-    //ConfiguracionTablero desiciones = new ConfiguracionTablero();
     arbol = configuracion.crearConfiguracionesTablero(jugadorActual, arbol, profundidadArbol);
     int valor = minimax(arbol, profundidadArbol, true);
     println("El valor de la Heuristica es = "+ valor);
@@ -46,6 +50,8 @@ class Minimax {
     }
     return jugada(mejorJugada, original);
   }
+  
+  
   private int[] jugada(Node<Tablero> arbol, Tablero inicial) {
     int[] posiciones = new int[2];
       if (inicial.equals(arbol.getParent().getData())) {
@@ -68,6 +74,13 @@ class Minimax {
       
     
   }
+  
+    /**
+   * Minimax, ejecuta tanto el maximizador como el minimizador 
+   * @param nodo configuracion del tablero
+   * @param depth profundidad actual del nodo
+   * @param maximizingPlayer maximizando o minimizando
+   * @return    */
   private int minimax(Node<Tablero> nodo, int depth, boolean maximizingPlayer) {
     
     int bestValue;
