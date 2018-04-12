@@ -19,38 +19,25 @@ class JugadaTablero {
       if ((y-1)>=0) { // Izquierda
         numFichasDiagonalSI = diagonalSuperiorIzq(x-1, y-1, jugadorOpuesto,tablero); // Revisada esta bien 
         numFichasReversibles+=numFichasDiagonalSI;
-        //if (numFichasDiagonalSI>0)
-          //println("DSI");
       }
       if ((y+1)<tablero.getAncho()) { // Revisamos derecha 
         numFichasDiagonalSD = diagonalSuperiorDer(x-1, y+1, jugadorOpuesto,tablero);
         numFichasReversibles+=numFichasDiagonalSD; // bien 
-        //if (numFichasDiagonalSD>0)
-          //println("DSD");
       }
       numFichasVerticalS =lineaVerticalSuperior(x-1, y, jugadorOpuesto,tablero); // vertical superior bien
       numFichasReversibles+=numFichasVerticalS;
-      //if (numFichasVerticalS>0)
-        //println("VerticalS");
     }
     if ((x+1)< tablero.getAlto()) { // Revisamos si existe nivel inferior
       if ((y-1)>=0) { // Revisamos si existe una diagonal inferior Izquierda
         numFichasDiagonalII =diagonalInferiorIzq(x+1, y-1, jugadorOpuesto,tablero);
         numFichasReversibles+=numFichasDiagonalII; // bien
-        //if (numFichasDiagonalII>0)
-          //println("DII");
       }
       if ((y+1)<tablero.getAncho()) { // Revisamos si existe una diagonal inferior Derecha
         numFichasDiagonalID =diagonalInferiorDer(x+1, y+1, jugadorOpuesto,tablero);
         numFichasReversibles+=numFichasDiagonalID;
-        //if (numFichasDiagonalID>0){ 
-          //println("DID");
-        //}
       }
       numFichasVerticalI =lineaVerticalInferior(x+1, y, jugadorOpuesto,tablero); // bien 
       numFichasReversibles+=numFichasVerticalI;
-      //if (numFichasVerticalI>0)
-        //println("VerticalI");
     }
     if ((y-1)>=0) {
       numFichasIzquierda =lineaHorizontalIzq(x, y-1, jugadorOpuesto,tablero);
@@ -61,8 +48,6 @@ class JugadaTablero {
     if ((y+1)<tablero.getAncho()) {
       numFichasDerecha =lineaHorizontalDer(x, y+1, jugadorOpuesto,tablero);
       numFichasReversibles+=numFichasDerecha;
-      //if (numFichasDerecha>0)
-        //println("Derecha");
     }
 
     return (numFichasReversibles > 0);

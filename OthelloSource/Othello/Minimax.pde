@@ -72,12 +72,8 @@ class Minimax {
     
     int bestValue;
     if (depth == 0 || nodo.isLeaf()) {
-      if(debug == 1)print("finale\n");
       int valor = configuracion.heuristica(nodo.getData(), dificultad);
-      if(debug == 1)print(valor);
-      if(debug == 1)print("\n");
       nodo.setUtilidad(valor);
-      //hojas.add(nodo);
       bestValue = valor;
     }
     else if (maximizingPlayer) {
@@ -87,7 +83,6 @@ class Minimax {
         int v = minimax(child, depth-1, false);
         bestValue = Math.max(bestValue, v);
       }
-      if(debug == 1)print("maxi\n");
     } else {
       
       bestValue = Integer.MAX_VALUE;
@@ -95,10 +90,7 @@ class Minimax {
         int v = minimax(child, depth-1, true);
         bestValue = Math.min(bestValue, v);
       }
-      if(debug == 1)print("mini\n");
     }
-    if(debug == 1)print(nodo.getData());
-    if(debug == 1)print(bestValue+ "\n");
     nodo.setUtilidad(bestValue);
     if(depth == profundidadArbol - 1)hojas.add(nodo);
     return bestValue;
@@ -164,9 +156,9 @@ class ConfiguracionTablero {
     }
   }
   /**
-   * Metodo que regresa  el valor de una configuracion de unn  tablero para el jugador que desea saberlo
-   * @param jugador 
+   * Metodo que regresa  el valor de una configuracion de un  tablero
    * @param tablero configuracion de un tablero de othelo 
+   * @param dif dificultad del agente
    * @return 
    */
   int heuristica(Tablero tablero, int dif) {
@@ -174,8 +166,8 @@ class ConfiguracionTablero {
     for (int i =0; i<8; i++) {
       for (int j=0; j<8; j++) {
         if (tablero.getFicha(i, j) == 2) {
-          if(dif > 0){        
-            
+          if(dif == 1){        
+            score += random(3);
           }
           
           if(dif > 1){
@@ -184,10 +176,10 @@ class ConfiguracionTablero {
           }
           if(dif > 2){
             if(i == 0 || j == 0 || i == 7 || j == 7){
-              score+= 5;
+              if(!((i == 0 || i == 7) && (j == 1 || j == 6)) && !((j == 0 || j == 7) && (i == 1 || i == 6)))score+= 5;
             }
             if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
-              score+= 10;
+              score+= 50;
             }
             if((i == 1 || i == 6) && (j == 0 || j == 1 || j == 6 || j == 7)){
               score-= 10;
@@ -196,16 +188,17 @@ class ConfiguracionTablero {
               score-= 10;
             }
             if((i > 1 && i < 6) && (j == 1 || j == 6)){
-              score-= 2;
+              score-= 5;
             }
             if((j > 1 && j < 6) && (i == 1 || i == 6)){
-              score-= 2;
+              score-= 5;
             }
+            
           }
         }
         else if (tablero.getFicha(i, j) == 1){
-          if(dif > 0){        
-            
+          if(dif == 1){        
+            score -= random(3);
           }
           if(dif > 1){
             score--;
@@ -213,10 +206,10 @@ class ConfiguracionTablero {
           }
           if(dificultad > 2){
             if(i == 0 || j == 0 || i == 7 || j == 7){
-              score-= 5;
+              if(!((i == 0 || i == 7) && (j == 1 || j == 6)) && !((j == 0 || j == 7) && (i == 1 || i == 6)))score-= 5;
             }
             if((i == 0 && (j == 7 || j == 0)) || (i == 7 && (j == 7 || j == 0))){
-              score-= 10;
+              score-= 50;
             }
             if((i == 1 || i == 6) && (j == 0 || j == 1 || j == 6 || j == 7)){
               score+= 10;
@@ -226,20 +219,16 @@ class ConfiguracionTablero {
             }
             
             if((i > 1 && i < 6) && (j == 1 || j == 6)){
-              score+= 2;
+              score+= 5;
             }
             if((j > 1 && j < 6) && (i == 1 || i == 6)){
-              score+= 2;
+              score+= 5;
             }
           }
         }
         
       }
     }
-    
-   //print(tablero);
-   //print(score);
-   //print("\n");
     return score;
   }
 }

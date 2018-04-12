@@ -34,7 +34,7 @@ void setup() {
   tablero = new Tablero(alto, ancho, tamano);
   configuracion = new ConfiguracionTablero();
   jugada = new JugadaTablero();
-  background(0, 153, 51);
+  background(60, 186, 96);
   stroke(181, 242, 192);
   for (int i = 0; i<alto; i++) {
     line(tamano*i, 0, tamano*i, tamano*8);
