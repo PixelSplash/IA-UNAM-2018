@@ -26,6 +26,11 @@ void settings() {
   size(tamano*8, tamano*8);
 }
 void setup() {
+  print("Bienvenidos a Othello\n\n");
+  print("Para cambiar la dificultad del agente presiona\n");
+  print("1 = fácil\n");
+  print("2 = Normal\n");
+  print("3 = Difícil\n");
   tablero = new Tablero(alto, ancho, tamano);
   configuracion = new ConfiguracionTablero();
   jugada = new JugadaTablero();
