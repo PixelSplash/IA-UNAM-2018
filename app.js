@@ -84,9 +84,9 @@ app.controller('recommenderController', function($scope, $http, $mdToast){
 			console.log('Total results: ', res.data.length);
 			// Game matrix (0's & 1's)
 			res.data.forEach(game => {
-				if(gameMatrix[game.gameId] === undefined)
-					gameMatrix[game.gameId] = [];
-				gameMatrix[game.gameId][game.genreId] = 1;
+				if(gameMatrix[game.GameID] === undefined)
+					gameMatrix[game.GameID] = [];
+				gameMatrix[game.GameID][game.genreId] = 1;
 			});
 			gameMatrix.forEach(game => {
 				for(let i = 0; i<=20; i++) // We know that exists 20 genres
